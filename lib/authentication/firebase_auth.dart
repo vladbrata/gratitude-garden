@@ -1,25 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import '../models/my_user.dart';
+import '../services/db_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final DatabaseService _dbService = DatabaseService();
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Metoda de Înregistrare (E-mail & Parolă)
+  /// Registers a new user with Email and Password, initializes a MyUser object,
+  /// and saves their data in the Firestore 'users' collection.
   Future<void> registerUser({
     required String email,
     required String password,
-    required String name,
-    List<String> departments = const [],
+    required String firstName,
+    required String lastName,
   }) async {
-    List<String> finalDepartments = List.from(departments);
-    if (!finalDepartments.contains('Ag')) {
-      finalDepartments.add('Ag');
-    }
-
     try {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
@@ -28,34 +25,34 @@ class AuthService {
 
       String uid = credential.user!.uid;
 
-      await _db.collection('users').doc(uid).set({
-        'name': name,
-        'email': email.trim(),
-        'role': 'volunteer',
-        'departments': finalDepartments,
-        'joinedDate': FieldValue.serverTimestamp(),
-        'meetingsAttended': [],
-        'volunteerScore': 0,
-        'profilePictureUrl': 'https://uxwing.com/no-profile-picture-icon/',
-        'isValidated': false,
-      });
+      // Initialize the MyUser object using the factory method with placeholders if data is incorrect.
+      MyUser newUser = MyUser.withPlaceholders(
+        id: uid,
+        firstName: firstName,
+        lastName: lastName,
+        profilePicUrl: '', // Will default to placeholder in the model
+        plants: [], // Empty list initially
+      );
+
+      // Save the user details to Firestore
+      await _dbService.saveUser(newUser);
     } on FirebaseAuthException catch (e) {
-      debugPrint("Eroare Firebase Auth: ${e.code}");
+      debugPrint("Firebase Auth Error: ${e.code}");
       rethrow;
     } catch (e) {
-      debugPrint("Eroare neașteptată: $e");
+      debugPrint("Unexpected error during registration: $e");
       rethrow;
     }
   }
 
-  // Metoda de Logare (E-mail & Parolă)
+  /// Login method (Email & Password)
   Future<void> login({required String email, required String password}) async {
     try {
       await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      debugPrint("Logare reușită pentru: $email");
+      debugPrint("Login successful for: $email");
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential' ||
           e.code == 'user-not-found' ||
@@ -67,12 +64,12 @@ class AuthService {
         throw 'An error occurred during authentication: ${e.message}';
       }
     } catch (e) {
-      debugPrint("Eroare neașteptată la login: $e");
+      debugPrint("Unexpected error during login: $e");
       rethrow;
     }
   }
 
-  // Metoda de Logout
+  /// Logout method
   Future<void> logout() async {
     await _auth.signOut();
   }

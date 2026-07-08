@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../authentication/firebase_auth.dart';
+import '../theme/app_theme.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -106,7 +107,8 @@ class _AuthPageState extends State<AuthPage> {
           await authService.registerUser(
             email: _registerEmailController.text,
             password: _registerPasswordController.text,
-            name: '${_registerFirstNameController.text.trim()} ${_registerLastNameController.text.trim()}',
+            firstName: _registerFirstNameController.text.trim(),
+            lastName: _registerLastNameController.text.trim(),
           );
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -124,10 +126,7 @@ class _AuthPageState extends State<AuthPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                e.toString(),
-                style: GoogleFonts.plusJakartaSans(),
-              ),
+              content: Text(e.toString(), style: GoogleFonts.plusJakartaSans()),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -145,79 +144,38 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2D2A2A),
-      body: Stack(
-        children: [
-          // 1. Organic Aura Background Gradient
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.center,
-                  radius: 0.8,
-                  colors: [
-                    Color(0x1454AA1D), // 8% opacity of #54aa1d
-                    Colors.transparent,
-                  ],
-                ),
+      body: ZenBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 24.0,
+            ),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Header Section
+                  _buildHeader(),
+                  const SizedBox(height: 24),
+
+                  // Main Glassmorphic Auth Card
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: _buildAuthCard(),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Bottom Visual Grounding Ornament
+                  _buildBottomOrnament(),
+                ],
               ),
             ),
           ),
-
-          // 2. Weeping Willow Background Line Art
-          Positioned(
-            bottom: -100,
-            left: -50,
-            width: 600,
-            height: 600,
-            child: IgnorePointer(
-              child: Opacity(
-                opacity: 0.03,
-                child: Image.asset(
-                  'assets/images/bg_willow.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback in case the asset is missing
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-            ),
-          ),
-
-          // 3. Scrollable Content Area
-          SafeArea(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
-                vertical: 24.0,
-              ),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Header Section
-                    _buildHeader(),
-                    const SizedBox(height: 24),
-
-                    // Main Glassmorphic Auth Card
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: _buildAuthCard(),
-                    ),
-                    const SizedBox(height: 48),
-
-                    // Bottom Visual Grounding Ornament
-                    _buildBottomOrnament(),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -294,6 +252,7 @@ class _AuthPageState extends State<AuthPage> {
                 duration: const Duration(milliseconds: 300),
                 firstCurve: Curves.easeInOut,
                 secondCurve: Curves.easeInOut,
+                sizeCurve: Curves.easeInOut,
               ),
               const SizedBox(height: 32),
 
@@ -324,6 +283,7 @@ class _AuthPageState extends State<AuthPage> {
             child: GestureDetector(
               onTap: () {
                 if (!_isLogin) {
+                  FocusScope.of(context).unfocus();
                   setState(() {
                     _isLogin = true;
                   });
@@ -369,6 +329,7 @@ class _AuthPageState extends State<AuthPage> {
             child: GestureDetector(
               onTap: () {
                 if (_isLogin) {
+                  FocusScope.of(context).unfocus();
                   setState(() {
                     _isLogin = false;
                   });
@@ -415,193 +376,206 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Widget _buildLoginForm() {
-    return Form(
-      key: _loginFormKey,
-      child: Column(
-        children: [
-          // Email field
-          _buildTextField(
-            controller: _loginEmailController,
-            focusNode: _loginEmailFocus,
-            hintText: 'Email Address',
-            icon: Icons.alternate_email,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-              }
-              if (!RegExp(
-                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-              ).hasMatch(value)) {
-                return 'Please enter a valid email address';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Password field
-          _buildTextField(
-            controller: _loginPasswordController,
-            focusNode: _loginPasswordFocus,
-            hintText: 'Password',
-            icon: Icons.lock,
-            obscureText: _obscureLoginPassword,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureLoginPassword ? Icons.visibility_off : Icons.visibility,
-                color: const Color(0xFFC0CAB4),
-                size: 20,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureLoginPassword = !_obscureLoginPassword;
-                });
+    return Opacity(
+      opacity: _isLogin ? 1.0 : 0.0,
+      child: Form(
+        key: _loginFormKey,
+        child: Column(
+          children: [
+            // Email field
+            _buildTextField(
+              controller: _loginEmailController,
+              focusNode: _loginEmailFocus,
+              hintText: 'Email Address',
+              icon: Icons.alternate_email,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
+                }
+                if (!RegExp(
+                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                ).hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                return null;
               },
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your password';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-          // Submit Button
-          _buildSubmitButton(
-            text: _isSubmitting ? 'Seeding...' : 'Enter Your Garden',
-            onPressed: _isSubmitting ? null : _submitForm,
-          ),
-        ],
+            // Password field
+            _buildTextField(
+              controller: _loginPasswordController,
+              focusNode: _loginPasswordFocus,
+              hintText: 'Password',
+              icon: Icons.lock,
+              obscureText: _obscureLoginPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureLoginPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: const Color(0xFFC0CAB4),
+                  size: 20,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureLoginPassword = !_obscureLoginPassword;
+                  });
+                },
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Submit Button
+            _buildSubmitButton(
+              text: _isSubmitting ? 'Seeding...' : 'Enter Your Garden',
+              onPressed: _isSubmitting ? null : _submitForm,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildRegisterForm() {
-    return Form(
-      key: _registerFormKey,
-      child: Column(
-        children: [
-          // First Name
-          _buildTextField(
-            controller: _registerFirstNameController,
-            focusNode: _registerFirstNameFocus,
-            hintText: 'First Name',
-            icon: Icons.person,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your first name';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Last Name
-          _buildTextField(
-            controller: _registerLastNameController,
-            focusNode: _registerLastNameFocus,
-            hintText: 'Last Name',
-            icon: Icons.person_outline,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your last name';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Email
-          _buildTextField(
-            controller: _registerEmailController,
-            focusNode: _registerEmailFocus,
-            hintText: 'Email Address',
-            icon: Icons.alternate_email,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-              }
-              if (!RegExp(
-                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-              ).hasMatch(value)) {
-                return 'Please enter a valid email address';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Create Password
-          _buildTextField(
-            controller: _registerPasswordController,
-            focusNode: _registerPasswordFocus,
-            hintText: 'Create Password',
-            icon: Icons.lock,
-            obscureText: _obscureRegisterPassword,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureRegisterPassword ? Icons.visibility_off : Icons.visibility,
-                color: const Color(0xFFC0CAB4),
-                size: 20,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureRegisterPassword = !_obscureRegisterPassword;
-                });
+    return Opacity(
+      opacity: !_isLogin ? 1.0 : 0.0,
+      child: Form(
+        key: _registerFormKey,
+        child: Column(
+          children: [
+            // First Name
+            _buildTextField(
+              controller: _registerFirstNameController,
+              focusNode: _registerFirstNameFocus,
+              hintText: 'First Name',
+              icon: Icons.person,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your first name';
+                }
+                return null;
               },
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please create a password';
-              }
-              if (value.length < 6) {
-                return 'Password must be at least 6 characters';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Confirm Password
-          _buildTextField(
-            controller: _registerConfirmPasswordController,
-            focusNode: _registerConfirmPasswordFocus,
-            hintText: 'Confirm Password',
-            icon: Icons.lock_outline,
-            obscureText: _obscureRegisterConfirmPassword,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureRegisterConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                color: const Color(0xFFC0CAB4),
-                size: 20,
-              ),
-              onPressed: () {
-                setState(() {
-                  _obscureRegisterConfirmPassword = !_obscureRegisterConfirmPassword;
-                });
+            // Last Name
+            _buildTextField(
+              controller: _registerLastNameController,
+              focusNode: _registerLastNameFocus,
+              hintText: 'Last Name',
+              icon: Icons.person_outline,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your last name';
+                }
+                return null;
               },
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please re-enter your password';
-              }
-              if (value != _registerPasswordController.text) {
-                return 'Passwords do not match';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-          // Submit Button
-          _buildSubmitButton(
-            text: _isSubmitting ? 'Seeding...' : 'Cultivate Your Garden',
-            onPressed: _isSubmitting ? null : _submitForm,
-          ),
-        ],
+            // Email
+            _buildTextField(
+              controller: _registerEmailController,
+              focusNode: _registerEmailFocus,
+              hintText: 'Email Address',
+              icon: Icons.alternate_email,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
+                }
+                if (!RegExp(
+                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                ).hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Create Password
+            _buildTextField(
+              controller: _registerPasswordController,
+              focusNode: _registerPasswordFocus,
+              hintText: 'Create Password',
+              icon: Icons.lock,
+              obscureText: _obscureRegisterPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureRegisterPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: const Color(0xFFC0CAB4),
+                  size: 20,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureRegisterPassword = !_obscureRegisterPassword;
+                  });
+                },
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please create a password';
+                }
+                if (value.length < 6) {
+                  return 'Password must be at least 6 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Confirm Password
+            _buildTextField(
+              controller: _registerConfirmPasswordController,
+              focusNode: _registerConfirmPasswordFocus,
+              hintText: 'Confirm Password',
+              icon: Icons.lock_outline,
+              obscureText: _obscureRegisterConfirmPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureRegisterConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: const Color(0xFFC0CAB4),
+                  size: 20,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureRegisterConfirmPassword =
+                        !_obscureRegisterConfirmPassword;
+                  });
+                },
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please re-enter your password';
+                }
+                if (value != _registerPasswordController.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Submit Button
+            _buildSubmitButton(
+              text: _isSubmitting ? 'Seeding...' : 'Cultivate Your Garden',
+              onPressed: _isSubmitting ? null : _submitForm,
+            ),
+          ],
+        ),
       ),
     );
   }
