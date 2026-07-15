@@ -71,25 +71,60 @@ class AppFonts {
 class ZenBackground extends StatelessWidget {
   final Widget child;
 
-  const ZenBackground({
-    super.key,
-    required this.child,
-  });
+  const ZenBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.zenDarkGreen,
-            AppColors.charcoal,
-          ],
-        ),
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(color: AppColors.charcoal),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Base smooth diagonal linear gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.zenDarkGreen,
+                  Color(
+                    0xFF22281D,
+                  ), // Smooth intermediate color retaining a slight green tint
+                  AppColors.charcoal,
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+
+          // 2. Soft top-left green radial glow
+          Positioned(
+            top: -150,
+            left: -100,
+            child: IgnorePointer(
+              child: Container(
+                width: 400,
+                height: 400,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF54AA1D).withValues(alpha: 0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 3. Content child
+          child,
+        ],
       ),
-      child: child,
     );
   }
 }

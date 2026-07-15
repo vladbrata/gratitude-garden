@@ -20,7 +20,12 @@ class MyApp extends StatelessWidget {
       title: 'Gratitude Garden',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF54AA1D)),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF2D2A2A),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF54AA1D),
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       home: const AuthWrapper(),

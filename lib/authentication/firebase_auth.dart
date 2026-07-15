@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import '../models/my_user.dart';
+import '../models/user_model.dart';
 import '../services/db_service.dart';
 
 class AuthService {
@@ -9,7 +9,7 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  /// Registers a new user with Email and Password, initializes a MyUser object,
+  /// Registers a new user with Email and Password, initializes a UserModel object,
   /// and saves their data in the Firestore 'users' collection.
   Future<void> registerUser({
     required String email,
@@ -25,13 +25,13 @@ class AuthService {
 
       String uid = credential.user!.uid;
 
-      // Initialize the MyUser object using the factory method with placeholders if data is incorrect.
-      MyUser newUser = MyUser.withPlaceholders(
-        id: uid,
-        firstName: firstName,
-        lastName: lastName,
-        profilePicUrl: '', // Will default to placeholder in the model
-        plants: [], // Empty list initially
+      // Initialize the UserModel object
+      UserModel newUser = UserModel(
+        userId: uid,
+        firstName: firstName.trim().isEmpty ? 'Garden' : firstName.trim(),
+        lastName: lastName.trim().isEmpty ? 'Guest' : lastName.trim(),
+        profilePicUrl: 'https://i.pinimg.com/1200x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg',
+        coins: 50, // Welcome coins bonus
       );
 
       // Save the user details to Firestore

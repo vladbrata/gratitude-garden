@@ -144,6 +144,7 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.charcoal,
       body: ZenBackground(
         child: SafeArea(
           child: SingleChildScrollView(

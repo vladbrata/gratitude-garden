@@ -1,107 +1,133 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gratitude_garden_app/models/my_user.dart';
-import 'package:gratitude_garden_app/models/plant.dart';
+import 'package:gratitude_garden_app/models/user_model.dart';
+import 'package:gratitude_garden_app/models/plant_model.dart';
+import 'package:gratitude_garden_app/models/message_model.dart';
 
 void main() {
-  group('Plant Model Tests', () {
+  group('PlantModel Tests', () {
     test('toMap and fromMap conversion with valid data', () {
       final date = DateTime(2026, 7, 8);
-      final plant = Plant(
-        id: 'plant_123',
-        name: 'Rose',
-        streak: 5,
-        user: 'user_123',
+      final plant = PlantModel(
+        plantId: 'plant_123',
+        userId: 'user_123',
+        plantName: 'Rose',
         datePlanted: date,
-        lastWattered: date,
+        lastWatered: date,
+        streak: 5,
+        plantLevel: 2,
       );
 
       final map = plant.toMap();
-      expect(map['id'], 'plant_123');
-      expect(map['name'], 'Rose');
+      expect(map['plantId'], isNull); // plantId is excluded from map as it's the document ID
+      expect(map['userId'], 'user_123');
+      expect(map['plantName'], 'Rose');
       expect(map['streak'], 5);
-      expect(map['user'], 'user_123');
+      expect(map['plantLevel'], 2);
       expect(map['datePlanted'], isA<Timestamp>());
+      expect(map['lastWatered'], isA<Timestamp>());
 
-      final parsed = Plant.fromMap(map);
-      expect(parsed.id, 'plant_123');
-      expect(parsed.name, 'Rose');
+      final parsed = PlantModel.fromMap(map, 'plant_123');
+      expect(parsed.plantId, 'plant_123');
+      expect(parsed.userId, 'user_123');
+      expect(parsed.plantName, 'Rose');
       expect(parsed.streak, 5);
-      expect(parsed.user, 'user_123');
+      expect(parsed.plantLevel, 2);
       expect(parsed.datePlanted.year, 2026);
+      expect(parsed.lastWatered.year, 2026);
     });
 
-    test('withPlaceholders constructor fallback behavior', () {
-      final plant = Plant.withPlaceholders(
-        id: '',
-        name: null,
-        streak: -5,
-        user: '   ',
-        datePlanted: null,
+    test('copyWith works correctly', () {
+      final plant = PlantModel(
+        plantId: 'plant_123',
+        userId: 'user_123',
+        plantName: 'Rose',
+        datePlanted: DateTime(2026, 7, 8),
+        lastWatered: DateTime(2026, 7, 8),
+        streak: 5,
+        plantLevel: 2,
       );
 
-      expect(plant.id, startsWith('plant_'));
-      expect(plant.name, 'Sprout');
-      expect(plant.streak, 0);
-      expect(plant.user, 'Anonymous');
-      expect(plant.datePlanted, isNotNull);
+      final updated = plant.copyWith(
+        plantName: 'Tulip',
+        streak: 6,
+      );
+
+      expect(updated.plantName, 'Tulip');
+      expect(updated.streak, 6);
+      expect(updated.plantId, 'plant_123'); // remains unchanged
     });
   });
 
-  group('MyUser Model Tests', () {
+  group('UserModel Tests', () {
     test('toMap and fromMap conversion with valid data', () {
-      final date = DateTime(2026, 7, 8);
-      final plant = Plant(
-        id: 'plant_123',
-        name: 'Rose',
-        streak: 5,
-        user: 'user_123',
-        datePlanted: date,
-        lastWattered: date,
-      );
-
-      final user = MyUser(
-        id: 'user_123',
+      final user = UserModel(
+        userId: 'user_123',
         firstName: 'Alice',
         lastName: 'Smith',
         profilePicUrl: 'https://example.com/pic.png',
-        plants: [plant],
+        coins: 120,
       );
 
       final map = user.toMap();
-      expect(map['id'], isNull); // id is not saved to map
+      expect(map['userId'], isNull); // userId is excluded from map as it's the document ID
       expect(map['firstName'], 'Alice');
       expect(map['lastName'], 'Smith');
       expect(map['profilePicUrl'], 'https://example.com/pic.png');
-      expect(map['plants'], isA<List>());
-      expect(map['plants'][0]['name'], 'Rose');
+      expect(map['coins'], 120);
 
-      final parsed = MyUser.fromMap('user_123', map);
-      expect(parsed.id, 'user_123');
+      final parsed = UserModel.fromMap(map, 'user_123');
+      expect(parsed.userId, 'user_123');
       expect(parsed.firstName, 'Alice');
       expect(parsed.lastName, 'Smith');
       expect(parsed.profilePicUrl, 'https://example.com/pic.png');
-      expect(parsed.plants.length, 1);
-      expect(parsed.plants[0].name, 'Rose');
+      expect(parsed.coins, 120);
     });
 
-    test('withPlaceholders constructor fallback behavior', () {
-      final user = MyUser.withPlaceholders(
-        id: '  ',
-        firstName: 'Alice123', // invalid characters
-        lastName: '', // empty
-        profilePicUrl: 'invalid_url', // invalid URL format
-        plants: null,
+    test('copyWith works correctly', () {
+      final user = UserModel(
+        userId: 'user_123',
+        firstName: 'Alice',
+        lastName: 'Smith',
+        profilePicUrl: 'https://example.com/pic.png',
+        coins: 120,
       );
 
-      expect(user.id, startsWith('user_'));
-      expect(user.firstName, 'Garden');
-      expect(user.lastName, 'Guest');
-      expect(
-        user.profilePicUrl,
-        'https://i.pinimg.com/1200x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg',
+      final updated = user.copyWith(
+        firstName: 'Alison',
+        coins: 150,
       );
-      expect(user.plants, isEmpty);
+
+      expect(updated.firstName, 'Alison');
+      expect(updated.coins, 150);
+      expect(updated.userId, 'user_123'); // remains unchanged
+    });
+  });
+
+  group('MessageModel Tests', () {
+    test('toMap and fromMap conversion with valid data', () {
+      final date = DateTime(2026, 7, 8);
+      final message = MessageModel(
+        messageId: 'msg_456',
+        plantId: 'plant_123',
+        userId: 'user_123',
+        dateWritten: date,
+        messageText: 'Gratitude text',
+      );
+
+      final map = message.toMap();
+      expect(map['messageId'], isNull); // messageId is excluded from map as it's the document ID
+      expect(map['plantId'], 'plant_123');
+      expect(map['userId'], 'user_123');
+      expect(map['messageText'], 'Gratitude text');
+      expect(map['dateWritten'], isA<Timestamp>());
+
+      final parsed = MessageModel.fromMap(map, 'msg_456');
+      expect(parsed.messageId, 'msg_456');
+      expect(parsed.plantId, 'plant_123');
+      expect(parsed.userId, 'user_123');
+      expect(parsed.messageText, 'Gratitude text');
+      expect(parsed.dateWritten.year, 2026);
     });
   });
 }
