@@ -23,6 +23,9 @@ class PlantModel {
   /// Nivelul de dezvoltare al plantei.
   final int plantLevel;
 
+  /// Tipul/specia plantei (ex: Bonsai, Oak, Fern, Succulent, Bamboo).
+  final String plantType;
+
   /// Constructorul standard cu parametri numiți și imutabili.
   PlantModel({
     required this.plantId,
@@ -32,6 +35,7 @@ class PlantModel {
     required this.lastWatered,
     required this.streak,
     required this.plantLevel,
+    this.plantType = 'Oak',
   });
 
   /// Factory pentru instanțierea clasei direct dintr-un [DocumentSnapshot] din Firestore.
@@ -52,6 +56,7 @@ class PlantModel {
       lastWatered: _parseDateTime(map['lastWatered']),
       streak: map['streak'] as int? ?? 0,
       plantLevel: map['plantLevel'] as int? ?? 1,
+      plantType: map['plantType'] as String? ?? 'Oak',
     );
   }
 
@@ -66,6 +71,7 @@ class PlantModel {
       'lastWatered': Timestamp.fromDate(lastWatered),
       'streak': streak,
       'plantLevel': plantLevel,
+      'plantType': plantType,
     };
   }
 
@@ -79,6 +85,7 @@ class PlantModel {
     DateTime? lastWatered,
     int? streak,
     int? plantLevel,
+    String? plantType,
   }) {
     return PlantModel(
       plantId: plantId ?? this.plantId,
@@ -88,6 +95,7 @@ class PlantModel {
       lastWatered: lastWatered ?? this.lastWatered,
       streak: streak ?? this.streak,
       plantLevel: plantLevel ?? this.plantLevel,
+      plantType: plantType ?? this.plantType,
     );
   }
 

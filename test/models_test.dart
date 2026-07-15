@@ -16,6 +16,7 @@ void main() {
         lastWatered: date,
         streak: 5,
         plantLevel: 2,
+        plantType: 'RoseType',
       );
 
       final map = plant.toMap();
@@ -24,6 +25,7 @@ void main() {
       expect(map['plantName'], 'Rose');
       expect(map['streak'], 5);
       expect(map['plantLevel'], 2);
+      expect(map['plantType'], 'RoseType');
       expect(map['datePlanted'], isA<Timestamp>());
       expect(map['lastWatered'], isA<Timestamp>());
 
@@ -33,6 +35,7 @@ void main() {
       expect(parsed.plantName, 'Rose');
       expect(parsed.streak, 5);
       expect(parsed.plantLevel, 2);
+      expect(parsed.plantType, 'RoseType');
       expect(parsed.datePlanted.year, 2026);
       expect(parsed.lastWatered.year, 2026);
     });
@@ -46,15 +49,18 @@ void main() {
         lastWatered: DateTime(2026, 7, 8),
         streak: 5,
         plantLevel: 2,
+        plantType: 'RoseType',
       );
 
       final updated = plant.copyWith(
         plantName: 'Tulip',
         streak: 6,
+        plantType: 'TulipType',
       );
 
       expect(updated.plantName, 'Tulip');
       expect(updated.streak, 6);
+      expect(updated.plantType, 'TulipType');
       expect(updated.plantId, 'plant_123'); // remains unchanged
     });
   });

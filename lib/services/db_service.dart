@@ -43,6 +43,22 @@ class DatabaseService {
     });
   }
 
+  /// Stream în timp real pentru o singură plantă a utilizatorului (`/users/{uid}/plants/{plantId}`).
+  Stream<PlantModel?> plantStream(String uid, String plantId) {
+    return _db
+        .collection('users')
+        .doc(uid)
+        .collection('plants')
+        .doc(plantId)
+        .snapshots()
+        .map((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) {
+        return null;
+      }
+      return PlantModel.fromDocument(snapshot);
+    });
+  }
+
   /// Stream în timp real pentru mesajele de recunoștință ale unei plante
   /// (`/users/{uid}/plants/{plantId}/messages`), ordonate cronologic invers (cele mai noi primele).
   Stream<List<MessageModel>> messagesStream(String uid, String plantId) {
@@ -60,7 +76,7 @@ class DatabaseService {
   }
 
   /// Adaugă o nouă plantă în sub-colecția de plante a utilizatorului.
-  Future<void> addPlant(String uid, String plantName) async {
+  Future<void> addPlant(String uid, String plantName, String plantType) async {
     try {
       final plantRef = _db.collection('users').doc(uid).collection('plants').doc();
       final newPlant = PlantModel(
@@ -71,6 +87,7 @@ class DatabaseService {
         lastWatered: DateTime.now(),
         streak: 1, // Începe cu 1 zi de streak la plantare
         plantLevel: 1,
+        plantType: plantType,
       );
       await plantRef.set(newPlant.toMap());
       debugPrint("Plantă nouă adăugată: ${newPlant.plantName} (${plantRef.id})");
