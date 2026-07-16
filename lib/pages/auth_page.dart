@@ -148,7 +148,7 @@ class _AuthPageState extends State<AuthPage> {
       body: ZenBackground(
         child: SafeArea(
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.symmetric(
               horizontal: 20.0,
               vertical: 24.0,

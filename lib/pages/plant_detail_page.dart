@@ -459,7 +459,7 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
                       // Detail Content scroll area
                       Expanded(
                         child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
+                          physics: const ClampingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,

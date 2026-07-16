@@ -138,7 +138,7 @@ class _PlantHistoryPageState extends State<PlantHistoryPage> {
                     }
 
                     return ListView.builder(
-                      physics: const BouncingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20.0,
                         vertical: 8.0,
