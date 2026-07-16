@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"gratitude-garden-3991c","appId":"1:5521801664:android:28c908886a29ea9327c825","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"gratitude-garden-3991c","configurations":{"android":"1:5521801664:android:28c908886a29ea9327c825","ios":"1:5521801664:ios:22f99af7198a245927c825","web":"1:5521801664:web:d4eca68d3977ad0327c825"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "gratitude-garden-3991c",
+          "appId": "1:5521801664:android:28c908886a29ea9327c825",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "gratitude-garden-3991c",
+          "configurations": {
+            "android": "1:5521801664:android:28c908886a29ea9327c825",
+            "ios": "1:5521801664:ios:22f99af7198a245927c825",
+            "web": "1:5521801664:web:d4eca68d3977ad0327c825"
+          }
+        }
+      }
+    }
+  }
+}
