@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/user_model.dart';
 import '../services/db_service.dart';
 import '../theme/app_theme.dart';
+import 'plant_detail_page.dart';
 
 class CreatePlantPage extends StatefulWidget {
   final UserModel user;
@@ -81,13 +82,21 @@ class _CreatePlantPageState extends State<CreatePlantPage> {
     });
 
     try {
-      await _dbService.addPlant(
+      final plantId = await _dbService.addPlant(
         widget.user.userId,
         plantName,
         _selectedSpirit,
       );
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlantDetailPage(
+              userId: widget.user.userId,
+              plantId: plantId,
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

@@ -208,7 +208,7 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Reflect on something you appreciate today. Writing this message increases your streak and awards you +10 coins!',
+                        'Reflect on something you appreciate today. Writing this message increases your streak and awards you +1 coin!',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           color: AppColors.paleGreenGray.withValues(alpha: 0.7),
@@ -285,7 +285,7 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
                                       scaffoldMessenger.showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                            'Gratitude recorded! +10 Coins',
+                                            'Gratitude recorded! +1 Coin',
                                             style: GoogleFonts.plusJakartaSans(
                                               fontWeight: FontWeight.bold,
                                               color: AppColors.textDark,

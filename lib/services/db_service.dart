@@ -75,8 +75,8 @@ class DatabaseService {
     });
   }
 
-  /// Adaugă o nouă plantă în sub-colecția de plante a utilizatorului.
-  Future<void> addPlant(String uid, String plantName, String plantType) async {
+  /// Adaugă o nouă plantă în sub-colecția de plante a utilizatorului și returnează ID-ul ei.
+  Future<String> addPlant(String uid, String plantName, String plantType) async {
     try {
       final plantRef = _db.collection('users').doc(uid).collection('plants').doc();
       final newPlant = PlantModel(
@@ -84,13 +84,14 @@ class DatabaseService {
         userId: uid,
         plantName: plantName,
         datePlanted: DateTime.now(),
-        lastWatered: DateTime.now(),
-        streak: 1, // Începe cu 1 zi de streak la plantare
+        lastWatered: DateTime.now().subtract(const Duration(days: 1)),
+        streak: 0, // Începe cu 0 zile de streak la plantare (urmează a fi udată)
         plantLevel: 1,
         plantType: plantType,
       );
       await plantRef.set(newPlant.toMap());
       debugPrint("Plantă nouă adăugată: ${newPlant.plantName} (${plantRef.id})");
+      return plantRef.id;
     } on FirebaseException catch (e) {
       debugPrint("Eroare Firestore la adăugarea plantei: ${e.code} - ${e.message}");
       rethrow;
@@ -100,21 +101,31 @@ class DatabaseService {
     }
   }
 
-  /// Udează o plantă, actualizând direct streak-ul și data ultimei udări.
+  /// Udează o plantă, actualizând direct streak-ul, data ultimei udări și oferind 1 monedă.
   Future<void> waterPlant(String uid, String plantId, int currentStreak) async {
+    final batch = _db.batch();
+
+    final plantRef = _db
+        .collection('users')
+        .doc(uid)
+        .collection('plants')
+        .doc(plantId);
+
+    batch.update(plantRef, {
+      'streak': currentStreak + 1,
+      'lastWatered': Timestamp.fromDate(DateTime.now()),
+    });
+
+    final userRef = _db.collection('users').doc(uid);
+    batch.update(userRef, {
+      'coins': FieldValue.increment(1),
+    });
+
     try {
-      await _db
-          .collection('users')
-          .doc(uid)
-          .collection('plants')
-          .doc(plantId)
-          .update({
-        'streak': currentStreak + 1,
-        'lastWatered': Timestamp.fromDate(DateTime.now()),
-      });
-      debugPrint("Planta $plantId a fost udată. Noul streak: ${currentStreak + 1}");
+      await batch.commit();
+      debugPrint("Planta $plantId a fost udată și s-a oferit 1 monedă. Noul streak: ${currentStreak + 1}");
     } on FirebaseException catch (e) {
-      debugPrint("Eroare Firestore la udarea plantei: ${e.code} - ${e.message}");
+      debugPrint("Eroare Firestore la udarea plantei (Write Batch): ${e.code} - ${e.message}");
       rethrow;
     }
   }
@@ -136,7 +147,7 @@ class DatabaseService {
   }
 
   /// Adaugă un mesaj de recunoștință în sub-colecția plantei și o "udează" automat,
-  /// actualizând streak-ul plantei, data ultimei udări și monedele utilizatorului (+10 monede).
+  /// actualizând streak-ul plantei, data ultimei udări și monedele utilizatorului (+1 monedă).
   Future<void> addMessage(String uid, String plantId, String messageText, int currentStreak, int currentCoins) async {
     final batch = _db.batch();
 
@@ -171,10 +182,10 @@ class DatabaseService {
       'lastWatered': Timestamp.fromDate(DateTime.now()),
     });
 
-    // 3. Referință pentru actualizarea monedelor utilizatorului (+10 coins pentru recunoștință)
+    // 3. Referință pentru actualizarea monedelor utilizatorului (+1 coin pentru recunoștință)
     final userRef = _db.collection('users').doc(uid);
     batch.update(userRef, {
-      'coins': currentCoins + 10,
+      'coins': currentCoins + 1,
     });
 
     try {
